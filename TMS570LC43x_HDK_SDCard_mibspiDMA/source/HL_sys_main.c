@@ -69,14 +69,14 @@
 *   The user can use this function to implement the application.
 */
 
-/* USER CODE BEGIN (2) */
+// SD card functions
 int SD_Test(void);
+int mountSD();
 int writeSD(char *filename, char *data);
-int readSD(char *filename, char *data);
+int readSD(char *filename, char *data, int readCount);
+
 
 #pragma SET_DATA_SECTION("SD_RDATA_SECTION")
-
-/* USER CODE END */
 
 int main(void)
 {
@@ -103,17 +103,24 @@ int main(void)
     /** - Configure MibSPI3 for SD card application */
     mibspiInit();
 
-    UARTprintf("\r Hercules HDK SD CARD Demo ");
-    UARTprintf("\r Type \'help\' for help.");
-    UARTprintf("\r\r Catalog MCU, qjwang@ti.com \r\r");
+    UARTprintf("SD Card Demo\n");
+
+
 
     /* Start RTI Counter Block 0 */
     rtiStartCounter(rtiREG1,rtiCOUNTER_BLOCK0);
 
-    // writeSD("test.txt", "CAN DATA :) ");
-    char data[32];   
-    readSD("DATALOG.txt", data);
-    UARTprintf("\nFile contents: %s", data);
+
+        mountSD();
+        UARTprintf("Writing to SD Card...\n");
+        writeSD("dataFile.txt", "HELLO I am data");
+
+        char data[32];
+        UARTprintf("Reading file from SD Card\n");
+        readSD("dataFile.txt", data, 32);
+        UARTprintf("\nFile contents: %s\n", data);
+
+
     SD_Test();
 /* USER CODE END */
 

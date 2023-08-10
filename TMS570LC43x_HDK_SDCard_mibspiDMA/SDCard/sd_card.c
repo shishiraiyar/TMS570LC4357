@@ -800,56 +800,40 @@ SD_Test(void)
     }
 }
 
+
+int mountSD(){
+    FRESULT iFResult;
+    iFResult = f_mount(0, &g_sFatFs);
+    if(iFResult != FR_OK){
+        UARTprintf("f_mount error: %s\n", StringFromFResult(iFResult));
+        return(1);
+    }
+}
+
 int writeSD(char *filename, char *data) {
     FRESULT iFResult;
     unsigned int ui32BytesRead;
     unsigned int i, errCount=0;
 
-    //
-    // First, check to make sure that the current path (CWD), plus the file
-    // name, plus a separator and trailing null, will all fit in the temporary
-    // buffer that will be used to hold the file name.  The file name must be
-    // fully specified, with path, to FatFs.
-    //
-    if(strlen(g_pcCwdBuf) + strlen(filename) + 1 + 1 > sizeof(g_pcTmpBuf))
-    {
+    if(strlen(g_pcCwdBuf) + strlen(filename) + 1 + 1 > sizeof(g_pcTmpBuf)){
         UARTprintf("Resulting path name is too long\n");
         return(0);
     }
 
-    //
-    // Copy the current path to the temporary buffer so it can be manipulated.
-    //
     strcpy(g_pcTmpBuf, g_pcCwdBuf);
-
-    //
-    // If not already at the root level, then append a separator.
-    //
-    if(strcmp("/", g_pcCwdBuf))
-    {
+    if(strcmp("/", g_pcCwdBuf)){
         strcat(g_pcTmpBuf, "/");
     }
-
-    //
-    // Now finally, append the file name to result in a fully specified file.
-    //
     strcat(g_pcTmpBuf, filename);
-
-    //
-    // Open the file for reading.
-    //
     iFResult = f_open(&g_sFileObject, g_pcTmpBuf, FA_WRITE | FA_CREATE_ALWAYS);
 
-    //
-    // If there was some problem opening the file, then return an error.
-    //
-    if(iFResult != FR_OK)
-    {
+    if(iFResult != FR_OK){
         return((int)iFResult);
     }
 
-    iFResult = f_write(&g_sFileObject, data, strlen(data), &ui32BytesRead); 
+    iFResult = f_write(&g_sFileObject, data, strlen(data), &ui32BytesRead);
     UARTprintf("\n%u Bytes written to file", ui32BytesRead);
+    iFResult = f_close(&g_sFileObject);
 
     return FR_OK;
 }
@@ -859,51 +843,26 @@ int readSD(char *filename, char *data, int readCount) {
     unsigned int ui32BytesRead;
     unsigned int i, errCount=0;
 
-    //
-    // First, check to make sure that the current path (CWD), plus the file
-    // name, plus a separator and trailing null, will all fit in the temporary
-    // buffer that will be used to hold the file name.  The file name must be
-    // fully specified, with path, to FatFs.
-    //
-    if(strlen(g_pcCwdBuf) + strlen(filename) + 1 + 1 > sizeof(g_pcTmpBuf))
-    {
+    if(strlen(g_pcCwdBuf) + strlen(filename) + 1 + 1 > sizeof(g_pcTmpBuf)){
         UARTprintf("Resulting path name is too long\n");
         return(0);
     }
 
-    //
-    // Copy the current path to the temporary buffer so it can be manipulated.
-    //
     strcpy(g_pcTmpBuf, g_pcCwdBuf);
-
-    //
-    // If not already at the root level, then append a separator.
-    //
-    if(strcmp("/", g_pcCwdBuf))
-    {
+    if(strcmp("/", g_pcCwdBuf)){
         strcat(g_pcTmpBuf, "/");
     }
-
-    //
-    // Now finally, append the file name to result in a fully specified file.
-    //
     strcat(g_pcTmpBuf, filename);
-
-    //
-    // Open the file for reading.
-    //
     iFResult = f_open(&g_sFileObject, g_pcTmpBuf, FA_READ);
 
-    //
-    // If there was some problem opening the file, then return an error.
-    //
     if(iFResult != FR_OK)
     {
         return((int)iFResult);
     }
 
     iFResult = f_read(&g_sFileObject, data, readCount - 1, (UINT *)&ui32BytesRead);
-    data[ui32BytesRead] = 0; 
-    
+    UARTprintf("\n%u Bytes read from file", ui32BytesRead);
+    data[ui32BytesRead] = 0;
+
     return FR_OK;
 }
